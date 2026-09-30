@@ -1,0 +1,49 @@
+[package]
+name = "nginxui-plugin-sdk"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Rust SDK for writing NGINX UI plugins"
+license = "AGPL-3.0-only"
+autoexamples = false
+readme = "README.md"
+repository = "https://github.com/nginxui/plugin-sdk-rust"
+homepage = "https://github.com/nginxui/plugin-spec"
+keywords = ["nginx-ui", "plugin", "json-rpc", "grpc", "nginx"]
+categories = ["api-bindings", "network-programming"]
+include = ["/src", "/README.md", "/LICENSE", "/Cargo.toml"]
+
+[lib]
+name = "nginxui_plugin_sdk"
+
+[[example]]
+name = "dns01"
+path = "examples/dns01.rs"
+
+[dependencies]
+async-trait = "0.1"
+bytes = "1"
+getrandom = "0.3"
+http = "1"
+http-body-util = "0.1"
+hyper = { version = "1", features = ["http1", "http2", "server"] }
+hyper-util = { version = "0.1", features = ["tokio", "server", "http1", "http2"] }
+pbjson = "0.9"
+prost = "0.14"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-util", "io-std", "net", "sync", "time", "signal"] }
+tower-service = "0.3"
+tonic = { version = "0.14", default-features = false, features = ["codegen"] }
+
+[dev-dependencies]
+base64 = "0.22"
+hyper = { version = "1", features = ["client", "http1", "http2", "server"] }
+prost-types = "0.14"
+tempfile = "3"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-util", "io-std", "net", "sync", "time", "signal", "test-util"] }
+
+[workspace]
+members = [".", "xtask", "examples/reference-plugin"]
+default-members = [".", "examples/reference-plugin"]

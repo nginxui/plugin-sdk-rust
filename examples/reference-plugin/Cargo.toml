@@ -1,0 +1,12 @@
+[package]
+name = "reference-plugin"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "A plugin that implements every capability of the NGINX UI plugin contract"
+
+[dependencies]
+async-trait = "0.1"
+nginxui-plugin-sdk = { path = "../.." }
+serde_json = "1"
+tokio = { version = "1", features = ["fs", "net", "time", "sync"] }

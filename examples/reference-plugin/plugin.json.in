@@ -1,0 +1,143 @@
+{
+  "id": "io.github.nginxui.reference",
+  "name": "Reference plugin",
+  "version": "0.1.0",
+  "description": "Implements every capability of the plugin contract with the Rust SDK.",
+  "api_version": 1,
+  "min_nginx_ui_version": "2.7.0",
+  "server": {
+    "executables": { "@PLATFORM@": "bin/reference-plugin-@PLATFORM@@EXT@" }
+  },
+  "capabilities": [
+    "dns01",
+    "http",
+    "notify",
+    "probe",
+    "mcp",
+    "storage",
+    "cert.deploy",
+    "security.blocklist",
+    "upstream.discovery",
+    "log.sink"
+  ],
+  "permissions": [
+    "kv",
+    "network",
+    "cron",
+    "notify",
+    "mcp",
+    "cert.deploy",
+    "log.read",
+    "log.files"
+  ],
+  "events": ["cert.issued", "log.paths_changed"],
+  "cron": [{ "id": "tick", "schedule": "@every 1h", "method": "cron.tick" }],
+  "http": { "listen": "unix" },
+  "settings_schema": {
+    "settings": [
+      {
+        "key": "greeting",
+        "type": "text",
+        "display_name": "Greeting",
+        "help_text": "Shown by the hello page.",
+        "default": "hello"
+      }
+    ]
+  },
+  "dns01": {
+    "providers": [
+      {
+        "name": "MyDNS",
+        "code": "mydns",
+        "links": { "api": "https://mydns.example/api" },
+        "propagation_timeout_seconds": 120,
+        "polling_interval_seconds": 2,
+        "form": {
+          "fields": [
+            {
+              "key": "MYDNS_API_TOKEN",
+              "label": "API token",
+              "help": "Create the token in the MyDNS console.",
+              "group": "credential",
+              "secret": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "notify": {
+    "channels": [
+      {
+        "code": "mychat",
+        "name": "MyChat",
+        "configuration": {
+          "fields": [
+            { "key": "webhook_url", "display_name": "Webhook URL", "required": true, "secret": true }
+          ]
+        }
+      }
+    ]
+  },
+  "probe": {
+    "kinds": [
+      {
+        "code": "tcp-banner",
+        "name": "TCP connect",
+        "configuration": {
+          "fields": [{ "key": "port", "type": "number", "display_name": "Port" }]
+        }
+      }
+    ]
+  },
+  "mcp": {
+    "tools": [
+      {
+        "name": "purge_cache",
+        "description": "Purge the cache of a zone.",
+        "input_schema": {
+          "type": "object",
+          "properties": { "zone": { "type": "string" } },
+          "required": ["zone"]
+        }
+      },
+      { "name": "list_zones", "description": "List the zones of the account." }
+    ]
+  },
+  "storage": {
+    "backends": [
+      {
+        "code": "memory",
+        "name": "Memory",
+        "configuration": {
+          "fields": [{ "key": "url", "display_name": "URL", "required": true }]
+        }
+      }
+    ]
+  },
+  "deploy": {
+    "targets": [{ "code": "local-copy", "name": "Local copy" }]
+  },
+  "blocklist": {
+    "sources": [
+      {
+        "code": "threatfeed",
+        "name": "ThreatFeed",
+        "configuration": {
+          "fields": [
+            { "key": "api_key", "display_name": "API key", "required": true, "secret": true }
+          ]
+        },
+        "refresh_seconds": 900
+      }
+    ]
+  },
+  "discovery": {
+    "providers": [{ "code": "static", "name": "Static registry" }]
+  },
+  "log_sink": {
+    "batch_size": 256,
+    "flush_interval_ms": 500,
+    "formats": ["combined", "raw"]
+  }
+}
