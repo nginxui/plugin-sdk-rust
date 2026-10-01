@@ -462,7 +462,7 @@ impl LogSinkHandler for Shipper {
 }
 ```
 
-The lines travel as a client stream on the gRPC transport only (spec WIRE-12):
+The lines travel as a client stream on the gRPC transport only:
 `log.push` has no stdio form and answers `-32601` there. Setting `Plugin::log_sink`
 therefore keeps gRPC on even when `Options::without_grpc` or
 `NGINX_UI_PLUGIN_DISABLE_GRPC=1` asked for stdio only.
@@ -471,7 +471,7 @@ therefore keeps gRPC on even when `Options::without_grpc` or
 
 Config templates and translation files need no process and no SDK: declare them
 in the manifest's `content` block and ship the files in the package. See
-`spec/17-content-plugins.md` of the specification.
+[Templates and Translations](https://nginxui.com/plugin/capabilities/content).
 
 ## Transports
 
@@ -547,7 +547,7 @@ The alignment tests (`src/tests/alignment.rs`) fail when a `protocol` type
 drifts from its proto message (a field name or a JSON shape), when a message
 has no counterpart, when a method constant has no rpc or the other way round,
 when an error code differs from the `ErrorCode` enum, and, when the spec
-checkout is there, when the rpc table differs from `spec/methods.json`.
+checkout is there, when the rpc table differs from `gen/methods.json`.
 
 To pick up a contract change, run `make generate` in the spec repository, then
 

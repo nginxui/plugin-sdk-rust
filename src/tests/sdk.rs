@@ -551,7 +551,7 @@ async fn null_members_mean_their_defaults() {
         }
     }));
 
-    // WIRE-10: null and absent are the same.
+    // null and absent are the same.
     let res = h
         .call(
             method::INITIALIZE,

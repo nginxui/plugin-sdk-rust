@@ -61,7 +61,7 @@ pub mod method {
     pub const DISCOVERY_RESOLVE: &str = "discovery.resolve";
 
     /// Capability `log.sink`. A client stream on the gRPC transport only, it
-    /// has no JSON-RPC form and stdio answers -32601 for it (spec WIRE-12).
+    /// has no JSON-RPC form and stdio answers -32601 for it.
     pub const LOG_PUSH: &str = "log.push";
 
     /// Event delivery, notification.

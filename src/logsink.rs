@@ -74,7 +74,7 @@ pub trait LogSinkHandler: Send + Sync + 'static {
 }
 
 /// Serves the `log.push` stream. It has no stdio handler, so a `log.push`
-/// request on stdio answers method not found (spec WIRE-12).
+/// request on stdio answers method not found.
 /// A shared handler serves as well as an owned one.
 #[async_trait]
 impl<T: LogSinkHandler + ?Sized> LogSinkHandler for Arc<T> {

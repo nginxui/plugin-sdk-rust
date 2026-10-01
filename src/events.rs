@@ -13,8 +13,7 @@ use crate::protocol::{Error, EventNotification};
 pub(crate) type EventFn = Arc<dyn Fn(Context, EventNotification) -> BoxFuture<()> + Send + Sync>;
 
 /// Builds the `events.on` handler that dispatches a delivered event to the
-/// handler registered for its type. An event without a handler is ignored,
-/// as the spec requires (HOST-15).
+/// handler registered for its type. An event without a handler is ignored.
 pub(crate) fn events_handler(handlers: std::collections::HashMap<String, EventFn>) -> RtHandler {
     let handlers = Arc::new(handlers);
     Arc::new(move |ctx: Context, params: Value| {

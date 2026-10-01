@@ -106,7 +106,7 @@ fn canonical(rpc: &Rpc, is_request: bool, value: &Value) -> Value {
     prune(decode(&bytes).unwrap())
 }
 
-/// An empty object means the same as an absent member (WIRE-10).
+/// An empty object means the same as an absent member.
 fn prune(value: Value) -> Value {
     match value {
         Value::Object(map) => Value::Object(

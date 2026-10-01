@@ -230,7 +230,7 @@ impl Runtime {
 }
 
 /// Removes the members that are `null` from an object, since a `null` member
-/// means its default (WIRE-10).
+/// means its default.
 fn strip_nulls(value: Value) -> Value {
     match value {
         Value::Object(map) => {
@@ -302,7 +302,7 @@ fn build_handlers(
     for (name, handler) in plugin.methods {
         if grpc::is_streaming_rpc(&name) {
             // A streaming rpc has no JSON-RPC form, stdio keeps answering
-            // method not found for it (spec WIRE-12).
+            // method not found for it.
             crate::logger::warn(format!(
                 "ignoring the stdio handler for {name}, a streaming rpc travels on gRPC only"
             ));

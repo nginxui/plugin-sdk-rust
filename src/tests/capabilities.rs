@@ -376,7 +376,8 @@ async fn malformed_params_are_invalid_params() {
     let mut h = start(Plugin::new().notify(n));
     h.initialize().await;
 
-    // The shape conformance case WIRE-6 sends: a string for an object.
+    // The params the malformed params conformance case sends: a string for an
+    // object.
     let err = h
         .call(method::NOTIFY_SEND, "not-an-object")
         .await

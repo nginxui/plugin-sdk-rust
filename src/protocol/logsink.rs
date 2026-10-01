@@ -5,7 +5,7 @@ use super::{is_zero_f64, is_zero_i32, ByteSize};
 /// One message of the `log.push` stream: one access log line.
 ///
 /// `log.push` is a client stream on the gRPC transport only and has no
-/// JSON-RPC form (spec WIRE-12). The serde form documents the protobuf JSON
+/// JSON-RPC form. The serde form documents the protobuf JSON
 /// mapping of the message.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]

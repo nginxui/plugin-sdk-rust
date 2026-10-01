@@ -530,17 +530,17 @@ fn error_codes_match_proto() {
     );
 }
 
-/// Compares the rpc table with `spec/methods.json` when the spec checkout is
+/// Compares the rpc table with `gen/methods.json` when the spec checkout is
 /// there, which catches a `pb` that lags behind the spec.
 #[test]
-fn rpcs_match_the_spec_methods_file() {
+fn rpcs_match_the_contract_methods_file() {
     let dir = std::env::var_os("SPEC_DIR")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../plugin-spec"));
-    let Ok(raw) = std::fs::read_to_string(dir.join("spec/methods.json")) else {
+    let Ok(raw) = std::fs::read_to_string(dir.join("gen/methods.json")) else {
         eprintln!(
             "skipped: {} is not there",
-            dir.join("spec/methods.json").display()
+            dir.join("gen/methods.json").display()
         );
         return;
     };

@@ -1,9 +1,9 @@
-//! The optional gRPC transport (spec WIRE-11).
+//! The optional gRPC transport.
 //!
 //! Every gRPC call is resolved through the [`registry`](crate::pb::registry)
 //! of the contract to its JSON-RPC method name and runs the exact handler the
 //! stdio dispatcher runs, so both transports answer identically. A client
-//! streaming rpc (WIRE-12) has no stdio form: it is read until the end of the
+//! streaming rpc has no stdio form: it is read until the end of the
 //! stream and handed to its stream handler.
 
 use std::collections::HashMap;
@@ -600,7 +600,7 @@ fn parse_timeout(headers: &HeaderMap) -> Option<Duration> {
     })
 }
 
-/// Maps a JSON-RPC error code onto a gRPC status code (spec WIRE-11).
+/// Maps a JSON-RPC error code onto a gRPC status code.
 pub(crate) fn grpc_code_for(rpc_code: i32) -> Code {
     match rpc_code {
         code::PARSE_ERROR | code::INVALID_REQUEST | code::INVALID_PARAMS | code::INVALID_CONFIG => {
@@ -658,7 +658,7 @@ pub(crate) fn grpc_status(err: &Error, override_code: Option<Code>) -> Status {
 }
 
 /// Converts error data to a `Struct`. A value that is not a JSON object is
-/// wrapped as `{"value": data}` (spec WIRE-5).
+/// wrapped as `{"value": data}`.
 fn error_data(data: Option<&Value>) -> Option<wkt::Struct> {
     match data? {
         Value::Null => None,
