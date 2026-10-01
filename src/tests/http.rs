@@ -512,6 +512,31 @@ async fn http_reports_a_loopback_port() {
     );
 }
 
+#[cfg(windows)]
+#[tokio::test]
+async fn http_reports_a_pipe() {
+    let dir = short_temp_dir();
+    let mut h = http_builder(Plugin::new().http(echo), &dir)
+        .options(|o| o.without_grpc())
+        .start();
+    let init = h.initialize().await;
+
+    assert!(
+        init.http_pipe.starts_with(r"\\.\pipe\") && init.http_port == 0,
+        "the default on Windows is a pipe: {init:?}"
+    );
+
+    let target = Target::Pipe(&init.http_pipe);
+    let headers = with_secret(&[(HEADER_USER_ID, "1"), (HEADER_USER, "bob")]);
+    assert_eq!(get_ok(&target, "/whoami", &headers).await, "1:bob");
+
+    // The pipe needs the secret as well.
+    let (status, _, _) = http_request(&target, "GET", "/whoami", &[]).await.unwrap();
+    assert_eq!(status, 401);
+
+    h.stop().await;
+}
+
 #[test]
 fn user_from_request_reads_the_headers() {
     let mut req = Request::new(());
@@ -520,9 +545,9 @@ fn user_from_request_reads_the_headers() {
         crate::protocol::HttpUser::default()
     );
     req.headers_mut()
-        .insert("x-nginx-ui-user-id", "3".parse().unwrap());
+        .insert("nginx-ui-user-id", "3".parse().unwrap());
     req.headers_mut()
-        .insert("x-nginx-ui-user", "carol".parse().unwrap());
+        .insert("nginx-ui-user", "carol".parse().unwrap());
     let user = user_from_request(&req);
     assert_eq!((user.id.as_str(), user.name.as_str()), ("3", "carol"));
 }

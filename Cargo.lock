@@ -346,6 +346,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tower-service",
+ "windows-sys",
 ]
 
 [[package]]

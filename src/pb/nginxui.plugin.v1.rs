@@ -440,6 +440,107 @@ pub struct HostActivitySetRequest {
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct HostActivitySetResponse {}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxSnippetPutRequest {
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub content: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxSnippetPutResponse {
+    #[prost(bool, tag = "1")]
+    pub changed: bool,
+    #[prost(string, tag = "2")]
+    pub include: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxSnippetDeleteRequest {
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxSnippetDeleteResponse {
+    #[prost(bool, tag = "1")]
+    pub removed: bool,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxSnippetListRequest {}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct HostNginxSnippetListResponse {
+    #[prost(message, repeated, tag = "1")]
+    pub snippets: ::prost::alloc::vec::Vec<HostNginxSnippet>,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxSnippet {
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub include: ::prost::alloc::string::String,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxConfigListRequest {}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxConfigListResponse {
+    #[prost(string, repeated, tag = "1")]
+    pub files: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxConfigGetRequest {
+    #[prost(string, tag = "1")]
+    pub path: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostNginxConfigGetResponse {
+    #[prost(string, tag = "1")]
+    pub content: ::prost::alloc::string::String,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostSitesListRequest {}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct HostSitesListResponse {
+    #[prost(message, repeated, tag = "1")]
+    pub sites: ::prost::alloc::vec::Vec<HostSite>,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostSite {
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub status: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "3")]
+    pub urls: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(string, tag = "4")]
+    pub config_file: ::prost::alloc::string::String,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostCertsListRequest {}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct HostCertsListResponse {
+    #[prost(message, repeated, tag = "1")]
+    pub certs: ::prost::alloc::vec::Vec<HostCert>,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct HostCert {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "3")]
+    pub domains: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(bool, tag = "4")]
+    pub auto_renew: bool,
+    #[prost(string, tag = "5")]
+    pub challenge_method: ::prost::alloc::string::String,
+    #[prost(string, tag = "6")]
+    pub key_type: ::prost::alloc::string::String,
+    #[prost(string, tag = "7")]
+    pub not_before: ::prost::alloc::string::String,
+    #[prost(string, tag = "8")]
+    pub not_after: ::prost::alloc::string::String,
+    #[prost(string, tag = "9")]
+    pub issuer: ::prost::alloc::string::String,
+}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct HttpHandleRequest {
     #[prost(string, tag = "1")]
@@ -513,6 +614,10 @@ pub struct PluginInitializeResponse {
     pub rpc_token: ::prost::alloc::string::String,
     #[prost(string, tag = "7")]
     pub rpc_socket: ::prost::alloc::string::String,
+    #[prost(string, tag = "8")]
+    pub http_pipe: ::prost::alloc::string::String,
+    #[prost(string, tag = "9")]
+    pub rpc_pipe: ::prost::alloc::string::String,
 }
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct PluginInitializedRequest {}

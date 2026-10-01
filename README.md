@@ -167,8 +167,9 @@ The SDK owns the listener, so the plugin does not open sockets itself:
   file at exactly this path, so unlike the gRPC socket there is no fallback for
   a data directory whose path is too long (103 bytes on macOS and the BSDs,
   107 on Linux).
-* On Windows it listens on `127.0.0.1` with a free port and reports it as
-  `http_port` in the `plugin.initialize` reply, which is where the host reads
+* On Windows it creates a named pipe under a random name that only the user
+  of the plugin may open, refusing remote clients, and reports it as
+  `http_pipe` in the `plugin.initialize` reply, which is where the host reads
   it.
 
 The listener is open before the `plugin.initialize` reply is sent. When it
@@ -182,18 +183,18 @@ still running and closes what is left. `Plugin::capabilities` need not list
 `http` when `Plugin::http` is set.
 
 The host removes the `Authorization` and `Cookie` headers and sets
-`X-Nginx-UI-User` and `X-Nginx-UI-User-ID`, which `user_from_request` reads.
+`Nginx-UI-User` and `Nginx-UI-User-ID`, which `user_from_request` reads.
 
 Every request also has to carry a secret. The host generates a random one for
 each process start, hands it over in `NGINX_UI_PLUGIN_HTTP_SECRET` and sends it
-in the header `X-Nginx-UI-Plugin-Secret` of every proxied request, on the Unix
-socket and on the Windows loopback port alike. The SDK reads the variable once
+in the header `Nginx-UI-Plugin-Secret` of every proxied request, on the Unix
+socket and on the Windows named pipe alike. The SDK reads the variable once
 at start and removes it from the environment, so child processes do not inherit
 it. It answers `401` to a request without the matching value (compared in
 constant time, WebSocket upgrades included) and takes the header off the
 request before your handler sees it. Because of that a handler can trust the
-user headers on every platform, even though any local process can reach the
-loopback port. Never log the secret. When the variable is missing the handshake
+user headers on every platform, even though other local processes may reach
+the listener. Never log the secret. When the variable is missing the handshake
 fails with an error that names it: the host always sets it.
 
 ### Notification channels
@@ -491,8 +492,8 @@ transport. The deadline of a gRPC call is applied to the handler.
   directory is unusable, the SDK uses a private directory under the system temp
   dir instead. The path is always reported in `rpc_socket`, and the socket is
   removed when the plugin exits.
-* On Windows it listens on a loopback TCP port, reported in `rpc_port` together
-  with a random `rpc_token`. Calls without the header
+* On Windows it listens on a named pipe under a random name, reported in
+  `rpc_pipe` together with a random `rpc_token`. Calls without the header
   `authorization: Bearer <rpc_token>` are rejected.
 
 To stay on stdio only, pass `Options::new().without_grpc()` to `serve_with`,
@@ -599,8 +600,10 @@ error with any code and payload, and `protocol::code` holds the constants.
 Once `plugin.initialized` arrived, `ctx.host()` (or `current_host()`) returns a
 client for the `host.*` side of the protocol: `log`, `kv_get` / `kv_set` /
 `kv_delete` / `kv_list`, `settings_get`, `locale`, `credentials_get`,
-`cron_register` / `cron_unregister`, `notify`, `metrics_snapshot`, `logs_list`
-and `activity_set` (`activity` wraps it in a guard that clears the entry). Each
+`cron_register` / `cron_unregister`, `notify`, `metrics_snapshot`, `logs_list`,
+`activity_set` (`activity` wraps it in a guard that clears the entry),
+`nginx_snippet_put` / `nginx_snippet_delete` / `nginx_snippet_list`,
+`nginx_config_list` / `nginx_config_get`, `sites_list` and `certs_list`. Each
 call needs the matching manifest permission; without it the host answers
 `-32001`, which `HostError::rpc_error` returns. A call before the handshake
 finished fails with `HostError::NotReady`. `settings()` returns the latest
@@ -633,6 +636,32 @@ fn main() {
 for. `activity_set(key, label, active)` shows a background task in the host
 processing indicator. `label` is an English source string; the browser bundle
 translates it with `registerTranslations`.
+
+### nginx configuration
+
+With the `nginx.snippet` permission a plugin keeps nginx configuration of its
+own. `nginx_snippet_put(name, content)` writes the snippet, and the host tests
+the whole configuration and reloads nginx. When nginx rejects it, the previous
+snippet stays and the call fails with `-32602`, carrying what nginx said. The
+result holds the `include` directive a person adds where the snippet should
+apply. A snippet that is still included cannot be deleted.
+
+```rust,no_run
+use nginxui_plugin_sdk::{Context, Plugin};
+use serde_json::json;
+
+fn main() {
+    let plugin = Plugin::new().method("cache.apply", |ctx: Context, _params| async move {
+        let put = ctx.host().nginx_snippet_put("static", "expires 7d;\n").await?;
+        Ok(json!({"include": put.include}))
+    });
+    nginxui_plugin_sdk::serve_blocking(plugin);
+}
+```
+
+`nginx_config_list` and `nginx_config_get` (`nginx.config.read`) read the
+configuration files, `sites_list` (`sites.read`) lists the sites and
+`certs_list` (`certs.read`) the certificates, never with their private keys.
 
 A cron entry, from the manifest or from `cron_register`, names a method of the
 plugin. When it fires, the host calls that method as an ordinary request with

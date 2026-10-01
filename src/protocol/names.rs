@@ -95,6 +95,20 @@ pub mod method {
     pub const HOST_LOGS_LIST: &str = "host.logs.list";
     /// Host API: show or clear a processing indicator entry.
     pub const HOST_ACTIVITY_SET: &str = "host.activity.set";
+    /// Host API: write an nginx configuration snippet.
+    pub const HOST_NGINX_SNIPPET_PUT: &str = "host.nginx.snippet.put";
+    /// Host API: remove an nginx configuration snippet.
+    pub const HOST_NGINX_SNIPPET_DELETE: &str = "host.nginx.snippet.delete";
+    /// Host API: list the nginx configuration snippets.
+    pub const HOST_NGINX_SNIPPET_LIST: &str = "host.nginx.snippet.list";
+    /// Host API: list the nginx configuration files.
+    pub const HOST_NGINX_CONFIG_LIST: &str = "host.nginx.config.list";
+    /// Host API: read an nginx configuration file.
+    pub const HOST_NGINX_CONFIG_GET: &str = "host.nginx.config.get";
+    /// Host API: list the sites.
+    pub const HOST_SITES_LIST: &str = "host.sites.list";
+    /// Host API: list the certificates.
+    pub const HOST_CERTS_LIST: &str = "host.certs.list";
 }
 
 /// Capability names a plugin may declare in its manifest.
@@ -146,6 +160,15 @@ pub mod permission {
     /// Lets the plugin list the nginx log files it may read and receive the
     /// `log.paths_changed` event.
     pub const LOG_FILES: &str = "log.files";
+    /// Lets the plugin write nginx configuration snippets that the host tests
+    /// and reloads.
+    pub const NGINX_SNIPPET: &str = "nginx.snippet";
+    /// Lets the plugin read the nginx configuration files.
+    pub const NGINX_CONFIG_READ: &str = "nginx.config.read";
+    /// Lets the plugin list the sites.
+    pub const SITES_READ: &str = "sites.read";
+    /// Lets the plugin list the certificates, without their private keys.
+    pub const CERTS_READ: &str = "certs.read";
     /// Prefix of a credential permission, followed by the credential kind,
     /// for example `credentials.read:dns`.
     pub const CREDENTIALS_READ_PREFIX: &str = "credentials.read:";

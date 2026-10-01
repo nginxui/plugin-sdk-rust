@@ -570,3 +570,92 @@ async fn null_members_mean_their_defaults() {
     assert!(recv(&mut configured, "configure").await.is_empty());
     let _ = Value::Null;
 }
+
+#[tokio::test]
+async fn host_nginx_calls() {
+    let plugin = Plugin::new().method("test.nginx", |ctx: Context, _params| async move {
+        let host = ctx.host();
+        let put = host.nginx_snippet_put("cache", "expires 1d;\n").await?;
+        let snippets = host.nginx_snippet_list().await?;
+        let removed = host.nginx_snippet_delete("cache").await?;
+        let files = host.nginx_config_list().await?;
+        let content = host.nginx_config_get(&files[0]).await?;
+        let sites = host.sites_list().await?;
+        let certs = host.certs_list().await?;
+        Ok(json!({
+            "changed": put.changed,
+            "include": put.include,
+            "snippets": snippets.len(),
+            "removed": removed,
+            "content": content,
+            "site": sites[0].name,
+            "cert": certs[0].not_after,
+        }))
+    });
+    let mut h = start(plugin);
+
+    let answers = [
+        (
+            method::HOST_NGINX_SNIPPET_PUT,
+            json!({"changed": true, "include": "include snippets/plugins/x/cache.conf;"}),
+        ),
+        (
+            method::HOST_NGINX_SNIPPET_LIST,
+            json!({"snippets": [{"name": "cache", "include": ""}]}),
+        ),
+        (method::HOST_NGINX_SNIPPET_DELETE, json!({"removed": true})),
+        (
+            method::HOST_NGINX_CONFIG_LIST,
+            json!({"files": ["nginx.conf"]}),
+        ),
+        (
+            method::HOST_NGINX_CONFIG_GET,
+            json!({"content": "events {}"}),
+        ),
+        (
+            method::HOST_SITES_LIST,
+            json!({"sites": [{"name": "a.test"}]}),
+        ),
+        (
+            method::HOST_CERTS_LIST,
+            json!({"certs": [{"not_after": "2026-12-01T00:00:00Z"}]}),
+        ),
+    ];
+    let params: Arc<Mutex<Vec<Value>>> = Arc::default();
+    for (name, answer) in answers {
+        let seen = params.clone();
+        h.host.handle(
+            name,
+            crate::jsonrpc::handler(move |p| {
+                let seen = seen.clone();
+                let answer = answer.clone();
+                async move {
+                    seen.lock().unwrap().push(p);
+                    Ok(answer)
+                }
+            }),
+        );
+    }
+
+    h.initialize().await;
+
+    let res = h.call("test.nginx", ()).await.unwrap();
+    assert_eq!(
+        res,
+        json!({
+            "changed": true,
+            "include": "include snippets/plugins/x/cache.conf;",
+            "snippets": 1,
+            "removed": true,
+            "content": "events {}",
+            "site": "a.test",
+            "cert": "2026-12-01T00:00:00Z",
+        })
+    );
+    let seen = params.lock().unwrap().clone();
+    assert_eq!(
+        seen[0],
+        json!({"name": "cache", "content": "expires 1d;\n"})
+    );
+    assert_eq!(seen[4], json!({"path": "nginx.conf"}));
+}

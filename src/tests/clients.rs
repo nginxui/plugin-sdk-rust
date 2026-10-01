@@ -51,6 +51,13 @@ impl Grpc {
             .expect("connect to the rpc port");
             return Grpc::over(TokioIo::new(stream), token).await;
         }
+        #[cfg(windows)]
+        if !init.rpc_pipe.is_empty() {
+            let stream = connect_pipe(&init.rpc_pipe)
+                .await
+                .expect("connect to the rpc pipe");
+            return Grpc::over(TokioIo::new(stream), token).await;
+        }
         #[cfg(unix)]
         {
             let stream = tokio::net::UnixStream::connect(&init.rpc_socket)
@@ -59,7 +66,7 @@ impl Grpc {
             Grpc::over(TokioIo::new(stream), token).await
         }
         #[cfg(not(unix))]
-        panic!("no rpc port")
+        panic!("no rpc pipe or port")
     }
 
     async fn over<T>(io: T, token: Option<String>) -> Grpc
@@ -199,11 +206,31 @@ impl GrpcError {
     }
 }
 
-// HTTP over a Unix socket or a loopback port.
+/// Connects to a named pipe, retrying while every instance is busy.
+#[cfg(windows)]
+pub async fn connect_pipe(
+    name: &str,
+) -> std::io::Result<tokio::net::windows::named_pipe::NamedPipeClient> {
+    use tokio::net::windows::named_pipe::ClientOptions;
+    // ERROR_PIPE_BUSY: the server is between two instances.
+    const PIPE_BUSY: i32 = 231;
+    loop {
+        match ClientOptions::new().open(name) {
+            Err(e) if e.raw_os_error() == Some(PIPE_BUSY) => {
+                tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+            }
+            other => return other,
+        }
+    }
+}
+
+// HTTP over a Unix socket, a named pipe or a loopback port.
 
 pub enum Target<'a> {
     #[cfg(unix)]
     Unix(&'a std::path::Path),
+    #[cfg(windows)]
+    Pipe(&'a str),
     Tcp(u16),
     #[allow(dead_code)]
     Never(std::marker::PhantomData<&'a ()>),
@@ -228,6 +255,12 @@ pub async fn http_request(
         #[cfg(unix)]
         Target::Unix(path) => {
             let mut s = tokio::net::UnixStream::connect(path).await?;
+            s.write_all(request.as_bytes()).await?;
+            s.read_to_end(&mut raw).await?;
+        }
+        #[cfg(windows)]
+        Target::Pipe(name) => {
+            let mut s = connect_pipe(name).await?;
             s.write_all(request.as_bytes()).await?;
             s.read_to_end(&mut raw).await?;
         }

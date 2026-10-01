@@ -197,3 +197,137 @@ pub mod log_source {
     /// The default log of nginx.
     pub const DEFAULT: &str = "default";
 }
+
+/// The params of `host.nginx.snippet.put`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxSnippetPutParams {
+    /// Name of the snippet inside the plugin, 1 to 64 characters of
+    /// `[a-z0-9_-]` starting with a letter or digit.
+    pub name: String,
+    /// nginx configuration text, at most 256 KiB.
+    pub content: String,
+}
+
+/// The reply to `host.nginx.snippet.put`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxSnippetPutResult {
+    /// False when the snippet already had this content.
+    pub changed: bool,
+    /// The directive that includes the snippet.
+    pub include: String,
+}
+
+/// The params of `host.nginx.snippet.delete`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxSnippetDeleteParams {
+    /// Name of the snippet.
+    pub name: String,
+}
+
+/// The reply to `host.nginx.snippet.delete`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxSnippetDeleteResult {
+    /// False when there was no such snippet.
+    pub removed: bool,
+}
+
+/// The reply to `host.nginx.snippet.list`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxSnippetListResult {
+    /// The snippets, sorted by name.
+    pub snippets: Vec<HostNginxSnippet>,
+}
+
+/// One snippet of [`HostNginxSnippetListResult`].
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxSnippet {
+    /// Name of the snippet.
+    pub name: String,
+    /// The directive that includes the snippet.
+    pub include: String,
+}
+
+/// The reply to `host.nginx.config.list`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxConfigListResult {
+    /// Paths relative to the nginx configuration directory, sorted.
+    pub files: Vec<String>,
+}
+
+/// The params of `host.nginx.config.get`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxConfigGetParams {
+    /// One of the paths `host.nginx.config.list` returns.
+    pub path: String,
+}
+
+/// The reply to `host.nginx.config.get`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostNginxConfigGetResult {
+    /// The content of the file.
+    pub content: String,
+}
+
+/// The reply to `host.sites.list`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostSitesListResult {
+    /// The sites, sorted by name.
+    pub sites: Vec<HostSite>,
+}
+
+/// One site of [`HostSitesListResult`].
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostSite {
+    /// Name of the site, the name of its configuration file.
+    pub name: String,
+    /// `enabled`, `disabled` or `maintenance`.
+    pub status: String,
+    /// The addresses the site answers on.
+    pub urls: Vec<String>,
+    /// Configuration file relative to the nginx configuration directory.
+    pub config_file: String,
+}
+
+/// The reply to `host.certs.list`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostCertsListResult {
+    /// The certificates, sorted by name.
+    pub certs: Vec<HostCert>,
+}
+
+/// One certificate of [`HostCertsListResult`]. It never carries a private
+/// key.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct HostCert {
+    /// Identifier of the certificate in the host, in decimal.
+    pub id: String,
+    /// Name of the certificate.
+    pub name: String,
+    /// Domains the certificate was requested for.
+    pub domains: Vec<String>,
+    /// True when the host renews the certificate itself.
+    pub auto_renew: bool,
+    /// `http01`, `dns01` or empty.
+    pub challenge_method: String,
+    /// Key type, such as `2048` or `P256`.
+    pub key_type: String,
+    /// Start of the validity as an RFC 3339 timestamp, empty when unknown.
+    pub not_before: String,
+    /// End of the validity as an RFC 3339 timestamp, empty when unknown.
+    pub not_after: String,
+    /// Organization or name of the issuing CA, empty when unknown.
+    pub issuer: String,
+}

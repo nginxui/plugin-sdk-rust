@@ -44,16 +44,16 @@ pub const HTTP_SOCKET_NAME: &str = "http.sock";
 
 /// Header the host sets on every proxied request with the name of the
 /// nginx-ui user behind it. The host removes any value the client sent.
-pub const HEADER_USER: &str = "X-Nginx-UI-User";
+pub const HEADER_USER: &str = "Nginx-UI-User";
 
 /// Header the host sets on every proxied request with the id of the nginx-ui
 /// user behind it. The host removes any value the client sent.
-pub const HEADER_USER_ID: &str = "X-Nginx-UI-User-ID";
+pub const HEADER_USER_ID: &str = "Nginx-UI-User-ID";
 
 /// Request header that carries the secret the host generated for this
 /// process. The SDK answers 401 to a request without the matching value and
 /// removes the header before it hands the request to the handler.
-pub const HEADER_PLUGIN_SECRET: &str = "X-Nginx-UI-Plugin-Secret";
+pub const HEADER_PLUGIN_SECRET: &str = "Nginx-UI-Plugin-Secret";
 
 /// How long a client may take to send the request headers.
 const READ_HEADER_TIMEOUT: Duration = Duration::from_secs(30);
@@ -137,8 +137,10 @@ pub fn user_from_request<B>(req: &Request<B>) -> HttpUser {
 /// The running HTTP listener of one plugin process.
 pub(crate) struct HttpTransport {
     server: Server,
-    /// The Unix socket path, `None` on TCP.
+    /// The Unix socket path, `None` on a pipe or TCP.
     socket: Option<PathBuf>,
+    /// The named pipe on Windows.
+    pipe: Option<String>,
     port: u16,
 }
 
@@ -159,14 +161,18 @@ pub(crate) fn start(
     }
     let network = network.unwrap_or_else(Network::platform_default);
 
-    let (listener, socket, port) = match network {
+    let (listener, socket, pipe, port) = match network {
         Network::Unix => {
             let (l, path) = listen_unix(data_dir)?;
-            (l, Some(path), 0)
+            (l, Some(path), None, 0)
+        }
+        Network::Pipe => {
+            let (l, name) = crate::pipe::listen()?;
+            (l, None, Some(name), 0)
         }
         Network::Tcp => {
             let (l, port) = listen_tcp()?;
-            (l, None, port)
+            (l, None, None, port)
         }
     };
 
@@ -183,6 +189,7 @@ pub(crate) fn start(
     Ok(HttpTransport {
         server,
         socket,
+        pipe,
         port,
     })
 }
@@ -321,10 +328,12 @@ async fn serve_request(
 }
 
 impl HttpTransport {
-    /// Adds the loopback port to the `plugin.initialize` reply. A Unix
-    /// socket needs no entry: the host takes it from the data directory.
+    /// Adds the pipe or loopback port to the `plugin.initialize` reply. A
+    /// Unix socket needs no entry: the host takes it from the data directory.
     pub(crate) fn advertise(&self, res: &mut InitializeResult) {
-        if self.socket.is_none() {
+        if let Some(name) = &self.pipe {
+            res.http_pipe.clone_from(name);
+        } else if self.socket.is_none() {
             res.http_port = i32::from(self.port);
         }
     }

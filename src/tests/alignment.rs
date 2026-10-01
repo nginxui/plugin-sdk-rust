@@ -70,6 +70,28 @@ fn alignments() -> Vec<Alignment> {
         align!(p::HostLogsListResult, "HostLogsListResponse"),
         align!(p::HostLogFile, "HostLogFile"),
         align!(p::HostActivitySetParams, "HostActivitySetRequest"),
+        align!(p::HostNginxSnippetPutParams, "HostNginxSnippetPutRequest"),
+        align!(p::HostNginxSnippetPutResult, "HostNginxSnippetPutResponse"),
+        align!(
+            p::HostNginxSnippetDeleteParams,
+            "HostNginxSnippetDeleteRequest"
+        ),
+        align!(
+            p::HostNginxSnippetDeleteResult,
+            "HostNginxSnippetDeleteResponse"
+        ),
+        align!(
+            p::HostNginxSnippetListResult,
+            "HostNginxSnippetListResponse"
+        ),
+        align!(p::HostNginxSnippet, "HostNginxSnippet"),
+        align!(p::HostNginxConfigListResult, "HostNginxConfigListResponse"),
+        align!(p::HostNginxConfigGetParams, "HostNginxConfigGetRequest"),
+        align!(p::HostNginxConfigGetResult, "HostNginxConfigGetResponse"),
+        align!(p::HostSitesListResult, "HostSitesListResponse"),
+        align!(p::HostSite, "HostSite"),
+        align!(p::HostCertsListResult, "HostCertsListResponse"),
+        align!(p::HostCert, "HostCert"),
         // dns01.rs
         align!(p::Dns01ChallengeParams, "DNS01PresentRequest"),
         align!(p::Dns01ChallengeParams, "DNS01CleanupRequest"),
@@ -433,6 +455,13 @@ fn method_names_match_proto() {
         method::HOST_METRICS_SNAPSHOT,
         method::HOST_LOGS_LIST,
         method::HOST_ACTIVITY_SET,
+        method::HOST_NGINX_SNIPPET_PUT,
+        method::HOST_NGINX_SNIPPET_DELETE,
+        method::HOST_NGINX_SNIPPET_LIST,
+        method::HOST_NGINX_CONFIG_LIST,
+        method::HOST_NGINX_CONFIG_GET,
+        method::HOST_SITES_LIST,
+        method::HOST_CERTS_LIST,
     ];
     let notifications = [method::INITIALIZED, method::EXIT, method::EVENTS_ON];
     let streams = [method::LOG_PUSH];

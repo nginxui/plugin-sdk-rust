@@ -530,6 +530,47 @@ async fn grpc_over_tcp_requires_the_token() {
     h.stop().await;
 }
 
+#[cfg(windows)]
+#[tokio::test]
+async fn grpc_over_a_pipe_requires_the_token() {
+    let dir = short_temp_dir();
+    let mut h = grpc_harness(Plugin::new().dns01(GrpcHandler), &dir, Network::Pipe).await;
+    let init: &InitializeResult = &h.init;
+    assert!(
+        init.rpc_pipe.starts_with(r"\\.\pipe\")
+            && init.rpc_token.len() >= 32
+            && init.rpc_port == 0
+            && init.rpc_socket.is_empty(),
+        "{init:?}"
+    );
+    let pipe = init.rpc_pipe.clone();
+
+    let grpc = Grpc::connect(&h.init).await;
+    let ping = "/nginxui.plugin.v1.Plugin/Ping";
+    let err = grpc
+        .call_with_authorization(ping, &[], None)
+        .await
+        .unwrap_err();
+    assert_eq!(err.code, clients::UNAUTHENTICATED);
+    grpc.call(ping, &[]).await.unwrap();
+
+    // Two clients at once each get an instance of their own.
+    let second = Grpc::connect(&h.init).await;
+    second.call(ping, &[]).await.unwrap();
+
+    h.stop().await;
+    drop((grpc, second));
+    let gone = tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        clients::connect_pipe(&pipe),
+    )
+    .await;
+    assert!(
+        matches!(gone, Ok(Err(_))),
+        "the pipe still accepts connections after stop"
+    );
+}
+
 fn assert_stdio_only(init: &InitializeResult, dir: &tempfile::TempDir) {
     assert_eq!(init.transports, [transport::STDIO]);
     assert!(

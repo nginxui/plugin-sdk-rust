@@ -124,12 +124,14 @@ impl Decoder for RawDecoder {
 /// The running gRPC listener of one plugin process.
 pub(crate) struct GrpcTransport {
     server: Server,
-    /// The Unix socket path, `None` on TCP.
+    /// The Unix socket path, `None` on a pipe or TCP.
     socket: Option<PathBuf>,
     /// The fallback directory holding `socket`, removed on stop.
     tmp_dir: Option<PathBuf>,
+    /// The named pipe on Windows.
+    pipe: Option<String>,
     port: u16,
-    /// Presented on TCP as `authorization: Bearer <token>`.
+    /// Presented on a pipe or TCP as `authorization: Bearer <token>`.
     token: String,
 }
 
@@ -144,6 +146,7 @@ pub(crate) fn start(
 
     let mut socket = None;
     let mut tmp_dir = None;
+    let mut pipe = None;
     let mut port = 0;
     let mut token = String::new();
     let listener = match network {
@@ -151,6 +154,12 @@ pub(crate) fn start(
             let (listener, path, dir) = listen_unix(data_dir, fallback_dirs)?;
             socket = Some(path);
             tmp_dir = dir;
+            listener
+        }
+        Network::Pipe => {
+            token = random_hex(32).map_err(|e| e.to_string())?;
+            let (listener, name) = crate::pipe::listen()?;
+            pipe = Some(name);
             listener
         }
         Network::Tcp => {
@@ -174,6 +183,7 @@ pub(crate) fn start(
         server,
         socket,
         tmp_dir,
+        pipe,
         port,
         token,
     })
@@ -275,13 +285,15 @@ impl GrpcTransport {
     pub(crate) fn advertise(&self, res: &mut InitializeResult) {
         res.transports
             .push(crate::protocol::transport::GRPC.to_owned());
-        match &self.socket {
-            Some(path) => res.rpc_socket = path.to_string_lossy().into_owned(),
-            None => {
-                res.rpc_port = i32::from(self.port);
-                res.rpc_token.clone_from(&self.token);
-            }
+        if let Some(path) = &self.socket {
+            res.rpc_socket = path.to_string_lossy().into_owned();
+            return;
         }
+        match &self.pipe {
+            Some(name) => res.rpc_pipe.clone_from(name),
+            None => res.rpc_port = i32::from(self.port),
+        }
+        res.rpc_token.clone_from(&self.token);
     }
 
     /// Ends the server, waiting a moment for calls still running, and removes

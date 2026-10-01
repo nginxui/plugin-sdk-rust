@@ -11,10 +11,15 @@ use serde_json::Value;
 use crate::jsonrpc::{CallError, Conn};
 use crate::logger::Level;
 use crate::protocol::{
-    self, method, Error, HostActivitySetParams, HostCredentialsGetParams, HostCredentialsGetResult,
-    HostCronRegisterParams, HostCronUnregisterParams, HostInfo, HostKvGetParams, HostKvGetResult,
-    HostKvListParams, HostKvListResult, HostKvSetParams, HostLogFile, HostLogParams,
-    HostLogsListResult, HostNotifyParams, HostSettingsGetResult, InitializeParams, Settings,
+    self, method, Error, HostActivitySetParams, HostCert, HostCertsListResult,
+    HostCredentialsGetParams, HostCredentialsGetResult, HostCronRegisterParams,
+    HostCronUnregisterParams, HostInfo, HostKvGetParams, HostKvGetResult, HostKvListParams,
+    HostKvListResult, HostKvSetParams, HostLogFile, HostLogParams, HostLogsListResult,
+    HostNginxConfigGetParams, HostNginxConfigGetResult, HostNginxConfigListResult,
+    HostNginxSnippet, HostNginxSnippetDeleteParams, HostNginxSnippetDeleteResult,
+    HostNginxSnippetListResult, HostNginxSnippetPutParams, HostNginxSnippetPutResult,
+    HostNotifyParams, HostSettingsGetResult, HostSite, HostSitesListResult, InitializeParams,
+    Settings,
 };
 
 /// Why a `host.*` call failed.
@@ -419,6 +424,85 @@ impl Host {
     pub async fn logs_list(&self) -> Result<Vec<HostLogFile>, HostError> {
         let res: HostLogsListResult = self.call_typed(method::HOST_LOGS_LIST, ()).await?;
         Ok(res.logs)
+    }
+
+    /// Writes one nginx configuration snippet of the plugin. The host tests
+    /// the whole configuration and reloads nginx, and puts the previous
+    /// snippet back when nginx rejects the new one, which is reported as an
+    /// invalid params error. The result carries the directive a person adds
+    /// where the snippet should apply. It needs the `nginx.snippet`
+    /// permission.
+    pub async fn nginx_snippet_put(
+        &self,
+        name: &str,
+        content: &str,
+    ) -> Result<HostNginxSnippetPutResult, HostError> {
+        self.call_typed(
+            method::HOST_NGINX_SNIPPET_PUT,
+            HostNginxSnippetPutParams {
+                name: name.to_owned(),
+                content: content.to_owned(),
+            },
+        )
+        .await
+    }
+
+    /// Removes one snippet of the plugin the same way. A snippet that is
+    /// still included cannot go and is kept. It returns whether a snippet
+    /// was removed and needs the `nginx.snippet` permission.
+    pub async fn nginx_snippet_delete(&self, name: &str) -> Result<bool, HostError> {
+        let res: HostNginxSnippetDeleteResult = self
+            .call_typed(
+                method::HOST_NGINX_SNIPPET_DELETE,
+                HostNginxSnippetDeleteParams {
+                    name: name.to_owned(),
+                },
+            )
+            .await?;
+        Ok(res.removed)
+    }
+
+    /// Lists the snippets of the plugin. It needs the `nginx.snippet`
+    /// permission.
+    pub async fn nginx_snippet_list(&self) -> Result<Vec<HostNginxSnippet>, HostError> {
+        let res: HostNginxSnippetListResult =
+            self.call_typed(method::HOST_NGINX_SNIPPET_LIST, ()).await?;
+        Ok(res.snippets)
+    }
+
+    /// Lists the nginx configuration files, relative to the configuration
+    /// directory. It needs the `nginx.config.read` permission.
+    pub async fn nginx_config_list(&self) -> Result<Vec<String>, HostError> {
+        let res: HostNginxConfigListResult =
+            self.call_typed(method::HOST_NGINX_CONFIG_LIST, ()).await?;
+        Ok(res.files)
+    }
+
+    /// Reads one file [`Host::nginx_config_list`] returns. It needs the
+    /// `nginx.config.read` permission.
+    pub async fn nginx_config_get(&self, path: &str) -> Result<String, HostError> {
+        let res: HostNginxConfigGetResult = self
+            .call_typed(
+                method::HOST_NGINX_CONFIG_GET,
+                HostNginxConfigGetParams {
+                    path: path.to_owned(),
+                },
+            )
+            .await?;
+        Ok(res.content)
+    }
+
+    /// Lists the sites. It needs the `sites.read` permission.
+    pub async fn sites_list(&self) -> Result<Vec<HostSite>, HostError> {
+        let res: HostSitesListResult = self.call_typed(method::HOST_SITES_LIST, ()).await?;
+        Ok(res.sites)
+    }
+
+    /// Lists the certificates without their private keys. It needs the
+    /// `certs.read` permission.
+    pub async fn certs_list(&self) -> Result<Vec<HostCert>, HostError> {
+        let res: HostCertsListResult = self.call_typed(method::HOST_CERTS_LIST, ()).await?;
+        Ok(res.certs)
     }
 
     /// Shows or clears one entry of the host processing indicator. `label` is

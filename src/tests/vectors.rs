@@ -580,6 +580,18 @@ async fn replay_host_to_plugin(v: &Vector) {
         let rpc = rpc_of(name);
 
         if is_initialize {
+            // Windows serves gRPC on a named pipe where the vector shows a
+            // Unix socket.
+            #[cfg(windows)]
+            if expected.get("rpc_socket").is_some() {
+                let pipe = got["rpc_pipe"].as_str().unwrap_or_default();
+                assert!(pipe.starts_with(r"\\.\pipe\"), "rpc_pipe = {pipe}");
+                assert!(got["rpc_token"].as_str().is_some_and(|t| t.len() >= 32));
+                let got = got.as_object_mut().unwrap();
+                got.remove("rpc_pipe");
+                got.remove("rpc_token");
+                got.insert("rpc_socket".to_owned(), json!("rpc.sock"));
+            }
             // Values that depend on the machine.
             for key in ["rpc_socket", "http_port"] {
                 if expected.get(key).is_some() {

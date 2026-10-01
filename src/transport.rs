@@ -1,5 +1,5 @@
 //! Listener plumbing shared by the gRPC and HTTP servers: an accept loop with
-//! a graceful stop, over Unix sockets or loopback TCP.
+//! a graceful stop, over Unix sockets, named pipes or loopback TCP.
 
 use std::io;
 use std::pin::Pin;
@@ -19,15 +19,18 @@ use crate::jsonrpc::BoxFuture;
 pub enum Network {
     /// A Unix domain socket in the data directory.
     Unix,
+    /// A named pipe, on Windows only.
+    Pipe,
     /// A loopback TCP port on `127.0.0.1`.
     Tcp,
 }
 
 impl Network {
-    /// The default for the platform: a Unix socket, loopback TCP on Windows.
+    /// The default for the platform: a named pipe on Windows, a Unix socket
+    /// everywhere else.
     pub(crate) fn platform_default() -> Network {
         if cfg!(windows) {
-            Network::Tcp
+            Network::Pipe
         } else {
             Network::Unix
         }
@@ -37,6 +40,8 @@ impl Network {
 pub(crate) enum Listener {
     #[cfg(unix)]
     Unix(tokio::net::UnixListener),
+    #[cfg(windows)]
+    Pipe(crate::pipe::PipeListener),
     Tcp(TcpListener),
 }
 
@@ -45,6 +50,8 @@ impl Listener {
         match self {
             #[cfg(unix)]
             Listener::Unix(l) => l.accept().await.map(|(s, _)| Stream::Unix(s)),
+            #[cfg(windows)]
+            Listener::Pipe(l) => l.accept().await.map(Stream::Pipe),
             Listener::Tcp(l) => l.accept().await.map(|(s, _)| Stream::Tcp(s)),
         }
     }
@@ -53,6 +60,8 @@ impl Listener {
 pub(crate) enum Stream {
     #[cfg(unix)]
     Unix(tokio::net::UnixStream),
+    #[cfg(windows)]
+    Pipe(tokio::net::windows::named_pipe::NamedPipeServer),
     Tcp(TcpStream),
 }
 
@@ -65,6 +74,8 @@ impl AsyncRead for Stream {
         match self.get_mut() {
             #[cfg(unix)]
             Stream::Unix(s) => Pin::new(s).poll_read(cx, buf),
+            #[cfg(windows)]
+            Stream::Pipe(s) => Pin::new(s).poll_read(cx, buf),
             Stream::Tcp(s) => Pin::new(s).poll_read(cx, buf),
         }
     }
@@ -79,6 +90,8 @@ impl AsyncWrite for Stream {
         match self.get_mut() {
             #[cfg(unix)]
             Stream::Unix(s) => Pin::new(s).poll_write(cx, buf),
+            #[cfg(windows)]
+            Stream::Pipe(s) => Pin::new(s).poll_write(cx, buf),
             Stream::Tcp(s) => Pin::new(s).poll_write(cx, buf),
         }
     }
@@ -87,6 +100,8 @@ impl AsyncWrite for Stream {
         match self.get_mut() {
             #[cfg(unix)]
             Stream::Unix(s) => Pin::new(s).poll_flush(cx),
+            #[cfg(windows)]
+            Stream::Pipe(s) => Pin::new(s).poll_flush(cx),
             Stream::Tcp(s) => Pin::new(s).poll_flush(cx),
         }
     }
@@ -95,6 +110,8 @@ impl AsyncWrite for Stream {
         match self.get_mut() {
             #[cfg(unix)]
             Stream::Unix(s) => Pin::new(s).poll_shutdown(cx),
+            #[cfg(windows)]
+            Stream::Pipe(s) => Pin::new(s).poll_shutdown(cx),
             Stream::Tcp(s) => Pin::new(s).poll_shutdown(cx),
         }
     }

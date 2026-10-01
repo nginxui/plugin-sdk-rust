@@ -1,5 +1,6 @@
 #![doc = include_str!("../README.md")]
-#![forbid(unsafe_code)]
+// Unsafe code is limited to the Win32 calls that secure named pipes.
+#![deny(unsafe_code)]
 #![warn(missing_docs)]
 
 mod blocklist;
@@ -20,6 +21,7 @@ mod notify;
 mod options;
 mod panic;
 pub mod pb;
+mod pipe;
 mod plugin;
 mod probe;
 pub mod protocol;

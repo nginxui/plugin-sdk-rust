@@ -40,21 +40,28 @@ pub struct InitializeResult {
     /// Empty means stdio only.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub transports: Vec<String>,
-    /// Loopback port of the `http` capability, reported when the plugin
-    /// cannot listen on a Unix socket.
+    /// Loopback port of the `http` capability, reported on Windows when the
+    /// plugin cannot open a named pipe. Used when `http_pipe` is empty.
     #[serde(skip_serializing_if = "is_zero_i32")]
     pub http_port: i32,
-    /// Loopback port of the gRPC transport, reported when the plugin cannot
-    /// listen on a Unix socket.
+    /// Loopback port of the gRPC transport, reported on Windows when the
+    /// plugin cannot open a named pipe. Used when `rpc_pipe` is empty.
     #[serde(skip_serializing_if = "is_zero_i32")]
     pub rpc_port: i32,
-    /// Token the host presents on the loopback gRPC transport.
+    /// Token the host presents on the Windows gRPC transport, named pipe or
+    /// loopback port.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub rpc_token: String,
     /// Absolute path of the Unix socket the gRPC transport listens on. Empty
     /// means `<NGINX_UI_PLUGIN_DATA_DIR>/rpc.sock`.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub rpc_socket: String,
+    /// Named pipe of the `http` capability on Windows.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub http_pipe: String,
+    /// Named pipe of the gRPC transport on Windows.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub rpc_pipe: String,
 }
 
 /// The payload of `plugin.configure`.
