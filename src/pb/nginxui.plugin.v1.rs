@@ -753,13 +753,23 @@ pub struct Manifest {
     pub i18n: ::prost::alloc::collections::BTreeMap<::prost::alloc::string::String, ManifestI18n>,
     #[prost(string, repeated, tag = "31")]
     pub conflicts: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(btree_map = "string, string", tag = "32")]
+    pub permission_reasons: ::prost::alloc::collections::BTreeMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
 }
-#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ManifestI18n {
     #[prost(string, tag = "1")]
     pub name: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub description: ::prost::alloc::string::String,
+    #[prost(btree_map = "string, string", tag = "3")]
+    pub permission_reasons: ::prost::alloc::collections::BTreeMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ManifestServer {

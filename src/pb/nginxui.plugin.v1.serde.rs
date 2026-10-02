@@ -11534,6 +11534,9 @@ impl serde::Serialize for Manifest {
         if !self.conflicts.is_empty() {
             len += 1;
         }
+        if !self.permission_reasons.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("nginxui.plugin.v1.Manifest", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
@@ -11628,6 +11631,9 @@ impl serde::Serialize for Manifest {
         if !self.conflicts.is_empty() {
             struct_ser.serialize_field("conflicts", &self.conflicts)?;
         }
+        if !self.permission_reasons.is_empty() {
+            struct_ser.serialize_field("permission_reasons", &self.permission_reasons)?;
+        }
         struct_ser.end()
     }
 }
@@ -11677,6 +11683,8 @@ impl<'de> serde::Deserialize<'de> for Manifest {
             "logSink",
             "i18n",
             "conflicts",
+            "permission_reasons",
+            "permissionReasons",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -11712,6 +11720,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
             LogSink,
             I18n,
             Conflicts,
+            PermissionReasons,
             __SkipField__,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -11774,6 +11783,9 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                             "logSink" | "log_sink" => Ok(GeneratedField::LogSink),
                             "i18n" => Ok(GeneratedField::I18n),
                             "conflicts" => Ok(GeneratedField::Conflicts),
+                            "permissionReasons" | "permission_reasons" => {
+                                Ok(GeneratedField::PermissionReasons)
+                            }
                             _ => Ok(GeneratedField::__SkipField__),
                         }
                     }
@@ -11824,6 +11836,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                 let mut log_sink__ = None;
                 let mut i18n__ = None;
                 let mut conflicts__ = None;
+                let mut permission_reasons__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -12017,6 +12030,13 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                             }
                             conflicts__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::PermissionReasons => {
+                            if permission_reasons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("permissionReasons"));
+                            }
+                            permission_reasons__ =
+                                Some(map_.next_value::<std::collections::BTreeMap<_, _>>()?);
+                        }
                         GeneratedField::__SkipField__ => {
                             let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -12054,6 +12074,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                     log_sink: log_sink__,
                     i18n: i18n__.unwrap_or_default(),
                     conflicts: conflicts__.unwrap_or_default(),
+                    permission_reasons: permission_reasons__.unwrap_or_default(),
                 })
             }
         }
@@ -12814,12 +12835,18 @@ impl serde::Serialize for ManifestI18n {
         if !self.description.is_empty() {
             len += 1;
         }
+        if !self.permission_reasons.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("nginxui.plugin.v1.ManifestI18n", len)?;
         if !self.name.is_empty() {
             struct_ser.serialize_field("name", &self.name)?;
         }
         if !self.description.is_empty() {
             struct_ser.serialize_field("description", &self.description)?;
+        }
+        if !self.permission_reasons.is_empty() {
+            struct_ser.serialize_field("permission_reasons", &self.permission_reasons)?;
         }
         struct_ser.end()
     }
@@ -12830,12 +12857,18 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
     where
         D: serde::Deserializer<'de>,
     {
-        const FIELDS: &[&str] = &["name", "description"];
+        const FIELDS: &[&str] = &[
+            "name",
+            "description",
+            "permission_reasons",
+            "permissionReasons",
+        ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Name,
             Description,
+            PermissionReasons,
             __SkipField__,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -12863,6 +12896,9 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
                         match value {
                             "name" => Ok(GeneratedField::Name),
                             "description" => Ok(GeneratedField::Description),
+                            "permissionReasons" | "permission_reasons" => {
+                                Ok(GeneratedField::PermissionReasons)
+                            }
                             _ => Ok(GeneratedField::__SkipField__),
                         }
                     }
@@ -12884,6 +12920,7 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
             {
                 let mut name__ = None;
                 let mut description__ = None;
+                let mut permission_reasons__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Name => {
@@ -12898,6 +12935,13 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
                             }
                             description__ = Some(map_.next_value()?);
                         }
+                        GeneratedField::PermissionReasons => {
+                            if permission_reasons__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("permissionReasons"));
+                            }
+                            permission_reasons__ =
+                                Some(map_.next_value::<std::collections::BTreeMap<_, _>>()?);
+                        }
                         GeneratedField::__SkipField__ => {
                             let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -12906,6 +12950,7 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
                 Ok(ManifestI18n {
                     name: name__.unwrap_or_default(),
                     description: description__.unwrap_or_default(),
+                    permission_reasons: permission_reasons__.unwrap_or_default(),
                 })
             }
         }

@@ -69,6 +69,10 @@ pub struct Manifest {
     /// Hosts the plugin connects to.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub network_hosts: Vec<String>,
+    /// Why the plugin asks for a permission, keyed by an entry of
+    /// `permissions`.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    pub permission_reasons: HashMap<String, String>,
 
     /// Metadata of the `dns01` capability.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -116,6 +120,9 @@ pub struct ManifestI18n {
     /// Translated description.
     #[serde(skip_serializing_if = "String::is_empty")]
     pub description: String,
+    /// Translated `permission_reasons`.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    pub permission_reasons: HashMap<String, String>,
 }
 
 /// Describes how to start the plugin process.
