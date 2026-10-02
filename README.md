@@ -104,7 +104,7 @@ Each capability is one method of `Plugin`. Setting it wires the methods of the
 capability and adds its name to the `capabilities` the plugin reports in the
 handshake, which must match the manifest (`Plugin::capabilities` overrides the
 derived list). The manifest block of each capability is described in the
-[specification](https://github.com/nginxui/plugin-spec).
+[developer guide](https://nginxui.com/plugin/overview).
 
 | `Plugin` method | Capability | Methods | Handler |
 | --- | --- | --- | --- |
