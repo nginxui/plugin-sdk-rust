@@ -501,15 +501,17 @@ async fn http_reports_a_loopback_port() {
     assert_eq!(status, 401);
 
     h.stop().await;
+    // Windows retries a refused loopback connect for about two seconds.
     let refused = tokio::time::timeout(
-        Duration::from_secs(1),
+        Duration::from_secs(10),
         tokio::net::TcpStream::connect(("127.0.0.1", port)),
     )
     .await;
-    assert!(
-        matches!(refused, Ok(Err(_))),
-        "the port still accepts connections after stop"
-    );
+    match refused {
+        Ok(Err(_)) => {}
+        Ok(Ok(_)) => panic!("the port still accepts connections after stop"),
+        Err(_) => panic!("connecting to the port did not finish after stop"),
+    }
 }
 
 #[cfg(windows)]
