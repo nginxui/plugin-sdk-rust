@@ -31,12 +31,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: plugin-sdk-rust
 
       # The tests look for the spec checkout next to this repository.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: nginxui/plugin-spec
           path: plugin-spec
@@ -71,12 +71,12 @@ jobs:
     name: src/pb matches nginxui/plugin-spec
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: plugin-sdk-rust
 
       # The generator looks for the spec checkout next to this repository.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: nginxui/plugin-spec
           path: plugin-spec
@@ -97,7 +97,7 @@ jobs:
     name: build with the minimum supported Rust version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@1.88
       - uses: Swatinem/rust-cache@v2
       - run: cargo build -p nginxui-plugin-sdk --locked
