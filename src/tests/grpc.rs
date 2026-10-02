@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+#[cfg(unix)]
 use std::path::PathBuf;
 
 use async_trait::async_trait;
@@ -100,15 +101,24 @@ async fn grpc_serves_the_stdio_handlers() {
                 Ok(Value::Null)
             }
         });
-    let mut h = grpc_harness(plugin, &dir, Network::Unix).await;
+    let mut h = grpc_harness(plugin, &dir, Network::platform_default()).await;
 
     assert_eq!(h.init.transports, [transport::STDIO, transport::GRPC]);
-    let want_socket = std::path::absolute(dir.path().join(RPC_SOCKET_NAME)).unwrap();
-    assert_eq!(h.init.rpc_socket, want_socket.to_string_lossy());
-    assert_eq!(
-        (h.init.rpc_port, h.init.rpc_token.as_str()),
-        (0, ""),
-        "a Unix socket reports no port or token"
+    #[cfg(unix)]
+    {
+        let want_socket = std::path::absolute(dir.path().join(RPC_SOCKET_NAME)).unwrap();
+        assert_eq!(h.init.rpc_socket, want_socket.to_string_lossy());
+        assert_eq!(
+            (h.init.rpc_port, h.init.rpc_token.as_str()),
+            (0, ""),
+            "a Unix socket reports no port or token"
+        );
+    }
+    #[cfg(windows)]
+    assert!(
+        h.init.rpc_pipe.starts_with(r"\\.\pipe\") && !h.init.rpc_token.is_empty(),
+        "{:?}",
+        h.init
     );
 
     let grpc = Grpc::connect(&h.init).await;
@@ -233,8 +243,10 @@ async fn grpc_serves_the_stdio_handlers() {
         .expect("events.on did not run");
     assert_eq!(got.as_deref(), Some("cert.renewed"));
 
+    #[cfg(unix)]
     let socket = PathBuf::from(&h.init.rpc_socket);
     h.stop().await;
+    #[cfg(unix)]
     assert!(!socket.exists(), "the socket still exists after stop");
 }
 
@@ -253,7 +265,7 @@ async fn grpc_serves_mcp_calls() {
             .to_owned();
         Ok(McpResult::text(format!("{zone}:{paths}")))
     });
-    let mut h = grpc_harness(Plugin::new().mcp(tools), &dir, Network::Unix).await;
+    let mut h = grpc_harness(Plugin::new().mcp(tools), &dir, Network::platform_default()).await;
     let grpc = Grpc::connect(&h.init).await;
 
     // The Struct arguments reach the tool as a JSON object and the content
@@ -321,7 +333,12 @@ impl StorageHandler for BigStorage {
 #[tokio::test]
 async fn grpc_carries_storage_sizes_as_doubles() {
     let dir = short_temp_dir();
-    let mut h = grpc_harness(Plugin::new().storage(BigStorage), &dir, Network::Unix).await;
+    let mut h = grpc_harness(
+        Plugin::new().storage(BigStorage),
+        &dir,
+        Network::platform_default(),
+    )
+    .await;
     let grpc = Grpc::connect(&h.init).await;
 
     let out = grpc
@@ -410,7 +427,7 @@ impl DiscoveryHandler for OneService {
 async fn grpc_serves_blocklist_and_discovery_calls() {
     let dir = short_temp_dir();
     let plugin = Plugin::new().blocklist(ListFeed).discovery(OneService);
-    let mut h = grpc_harness(plugin, &dir, Network::Unix).await;
+    let mut h = grpc_harness(plugin, &dir, Network::platform_default()).await;
     let grpc = Grpc::connect(&h.init).await;
 
     let out = grpc
@@ -653,7 +670,12 @@ async fn grpc_answers_a_deadline() {
     }
 
     let dir = short_temp_dir();
-    let mut h = grpc_harness(Plugin::new().dns01(Sleepy), &dir, Network::Unix).await;
+    let mut h = grpc_harness(
+        Plugin::new().dns01(Sleepy),
+        &dir,
+        Network::platform_default(),
+    )
+    .await;
     let grpc = Grpc::connect(&h.init).await;
     let started = std::time::Instant::now();
     let err = grpc
@@ -676,7 +698,7 @@ async fn grpc_carries_messages_past_the_stdio_limit() {
         let echoed = args.get("blob").and_then(Value::as_str).map_or(0, str::len);
         Ok(McpResult::text(format!("{echoed}:{}", "y".repeat(6 << 20))))
     });
-    let mut h = grpc_harness(Plugin::new().mcp(tools), &dir, Network::Unix).await;
+    let mut h = grpc_harness(Plugin::new().mcp(tools), &dir, Network::platform_default()).await;
     let grpc = Grpc::connect(&h.init).await;
 
     // 6 MiB in and 6 MiB out, more than a stdio frame holds.

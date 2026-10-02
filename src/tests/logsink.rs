@@ -71,7 +71,12 @@ fn response(out: &[u8]) -> pb::LogSinkPushResponse {
 async fn log_sink_streams_over_grpc() {
     let sink = Arc::new(LogRecorder::default());
     let dir = short_temp_dir();
-    let mut h = grpc_harness(Plugin::new().log_sink(sink.clone()), &dir, Network::Unix).await;
+    let mut h = grpc_harness(
+        Plugin::new().log_sink(sink.clone()),
+        &dir,
+        Network::platform_default(),
+    )
+    .await;
     assert_eq!(h.init.capabilities, [capability::LOG_SINK]);
 
     let grpc = Grpc::connect(&h.init).await;
@@ -127,7 +132,12 @@ async fn log_sink_streams_over_grpc() {
 async fn log_sink_splits_long_streams() {
     let sink = Arc::new(LogRecorder::default());
     let dir = short_temp_dir();
-    let h = grpc_harness(Plugin::new().log_sink(sink.clone()), &dir, Network::Unix).await;
+    let h = grpc_harness(
+        Plugin::new().log_sink(sink.clone()),
+        &dir,
+        Network::platform_default(),
+    )
+    .await;
     let grpc = Grpc::connect(&h.init).await;
 
     let requests = vec![log_request(200); MAX_LOG_SINK_BATCH + 4];
@@ -152,7 +162,7 @@ async fn log_sink_is_never_served_on_stdio() {
                 Ok(json!({}))
             }
         });
-    let h = grpc_harness(plugin, &dir, Network::Unix).await;
+    let h = grpc_harness(plugin, &dir, Network::platform_default()).await;
 
     let err = h
         .call(
@@ -177,18 +187,21 @@ async fn log_sink_keeps_grpc_on() {
     let dir = short_temp_dir();
     let mut h = Builder::new(Plugin::new().log_sink(Arc::new(LogRecorder::default())))
         .data_dir(dir.path())
-        .options(|o: Options| o.without_grpc().with_grpc_network(Network::Unix))
+        .options(|o: Options| {
+            o.without_grpc()
+                .with_grpc_network(Network::platform_default())
+        })
         .start();
     let init = h.initialize().await;
     assert_eq!(init.transports, [transport::STDIO, transport::GRPC]);
-    assert!(!init.rpc_socket.is_empty());
+    assert!(!init.rpc_socket.is_empty() || !init.rpc_pipe.is_empty());
 
     // Environment.
     let dir = short_temp_dir();
     let mut h = Builder::new(Plugin::new().log_sink(Arc::new(LogRecorder::default())))
         .data_dir(dir.path())
         .var(env::DISABLE_GRPC, "1")
-        .options(|o| o.with_grpc_network(Network::Unix))
+        .options(|o| o.with_grpc_network(Network::platform_default()))
         .start();
     let init = h.initialize().await;
     assert_eq!(init.transports, [transport::STDIO, transport::GRPC]);
@@ -197,7 +210,12 @@ async fn log_sink_keeps_grpc_on() {
 #[tokio::test]
 async fn log_push_without_a_handler_is_unknown() {
     let dir = short_temp_dir();
-    let h = grpc_harness(Plugin::new().dns01(GrpcHandler), &dir, Network::Unix).await;
+    let h = grpc_harness(
+        Plugin::new().dns01(GrpcHandler),
+        &dir,
+        Network::platform_default(),
+    )
+    .await;
     let grpc = Grpc::connect(&h.init).await;
 
     let err = grpc.stream(PUSH, &[log_request(200)]).await.unwrap_err();
@@ -223,7 +241,12 @@ async fn an_open_stream_counts_for_shutdown() {
 
     let (tx, mut started) = tokio::sync::mpsc::unbounded_channel();
     let dir = short_temp_dir();
-    let h = grpc_harness(Plugin::new().log_sink(Gate(tx)), &dir, Network::Unix).await;
+    let h = grpc_harness(
+        Plugin::new().log_sink(Gate(tx)),
+        &dir,
+        Network::platform_default(),
+    )
+    .await;
     let grpc = Grpc::connect(&h.init).await;
 
     let stream = tokio::spawn(async move { grpc.stream(PUSH, &[log_request(200)]).await });
