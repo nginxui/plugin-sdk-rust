@@ -149,6 +149,7 @@ fn alignments() -> Vec<Alignment> {
         // manifest.rs
         align!(p::Manifest, "Manifest"),
         align!(p::ManifestI18n, "ManifestI18n"),
+        align!(p::ManifestScreenshot, "ManifestScreenshot"),
         align!(p::ManifestServer, "ManifestServer"),
         align!(p::ManifestResources, "ManifestResources"),
         align!(p::ManifestWebapp, "ManifestWebapp"),

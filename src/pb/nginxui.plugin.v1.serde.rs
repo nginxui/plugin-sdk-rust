@@ -11537,6 +11537,9 @@ impl serde::Serialize for Manifest {
         if !self.permission_reasons.is_empty() {
             len += 1;
         }
+        if !self.screenshots.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("nginxui.plugin.v1.Manifest", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
@@ -11634,6 +11637,9 @@ impl serde::Serialize for Manifest {
         if !self.permission_reasons.is_empty() {
             struct_ser.serialize_field("permission_reasons", &self.permission_reasons)?;
         }
+        if !self.screenshots.is_empty() {
+            struct_ser.serialize_field("screenshots", &self.screenshots)?;
+        }
         struct_ser.end()
     }
 }
@@ -11685,6 +11691,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
             "conflicts",
             "permission_reasons",
             "permissionReasons",
+            "screenshots",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -11721,6 +11728,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
             I18n,
             Conflicts,
             PermissionReasons,
+            Screenshots,
             __SkipField__,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -11786,6 +11794,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                             "permissionReasons" | "permission_reasons" => {
                                 Ok(GeneratedField::PermissionReasons)
                             }
+                            "screenshots" => Ok(GeneratedField::Screenshots),
                             _ => Ok(GeneratedField::__SkipField__),
                         }
                     }
@@ -11837,6 +11846,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                 let mut i18n__ = None;
                 let mut conflicts__ = None;
                 let mut permission_reasons__ = None;
+                let mut screenshots__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -12037,6 +12047,12 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                             permission_reasons__ =
                                 Some(map_.next_value::<std::collections::BTreeMap<_, _>>()?);
                         }
+                        GeneratedField::Screenshots => {
+                            if screenshots__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("screenshots"));
+                            }
+                            screenshots__ = Some(map_.next_value()?);
+                        }
                         GeneratedField::__SkipField__ => {
                             let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -12075,6 +12091,7 @@ impl<'de> serde::Deserialize<'de> for Manifest {
                     i18n: i18n__.unwrap_or_default(),
                     conflicts: conflicts__.unwrap_or_default(),
                     permission_reasons: permission_reasons__.unwrap_or_default(),
+                    screenshots: screenshots__.unwrap_or_default(),
                 })
             }
         }
@@ -12838,6 +12855,9 @@ impl serde::Serialize for ManifestI18n {
         if !self.permission_reasons.is_empty() {
             len += 1;
         }
+        if !self.screenshot_captions.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("nginxui.plugin.v1.ManifestI18n", len)?;
         if !self.name.is_empty() {
             struct_ser.serialize_field("name", &self.name)?;
@@ -12847,6 +12867,9 @@ impl serde::Serialize for ManifestI18n {
         }
         if !self.permission_reasons.is_empty() {
             struct_ser.serialize_field("permission_reasons", &self.permission_reasons)?;
+        }
+        if !self.screenshot_captions.is_empty() {
+            struct_ser.serialize_field("screenshot_captions", &self.screenshot_captions)?;
         }
         struct_ser.end()
     }
@@ -12862,6 +12885,8 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
             "description",
             "permission_reasons",
             "permissionReasons",
+            "screenshot_captions",
+            "screenshotCaptions",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -12869,6 +12894,7 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
             Name,
             Description,
             PermissionReasons,
+            ScreenshotCaptions,
             __SkipField__,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
@@ -12899,6 +12925,9 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
                             "permissionReasons" | "permission_reasons" => {
                                 Ok(GeneratedField::PermissionReasons)
                             }
+                            "screenshotCaptions" | "screenshot_captions" => {
+                                Ok(GeneratedField::ScreenshotCaptions)
+                            }
                             _ => Ok(GeneratedField::__SkipField__),
                         }
                     }
@@ -12921,6 +12950,7 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
                 let mut name__ = None;
                 let mut description__ = None;
                 let mut permission_reasons__ = None;
+                let mut screenshot_captions__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::Name => {
@@ -12942,6 +12972,15 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
                             permission_reasons__ =
                                 Some(map_.next_value::<std::collections::BTreeMap<_, _>>()?);
                         }
+                        GeneratedField::ScreenshotCaptions => {
+                            if screenshot_captions__.is_some() {
+                                return Err(serde::de::Error::duplicate_field(
+                                    "screenshotCaptions",
+                                ));
+                            }
+                            screenshot_captions__ =
+                                Some(map_.next_value::<std::collections::BTreeMap<_, _>>()?);
+                        }
                         GeneratedField::__SkipField__ => {
                             let _ = map_.next_value::<serde::de::IgnoredAny>()?;
                         }
@@ -12951,6 +12990,7 @@ impl<'de> serde::Deserialize<'de> for ManifestI18n {
                     name: name__.unwrap_or_default(),
                     description: description__.unwrap_or_default(),
                     permission_reasons: permission_reasons__.unwrap_or_default(),
+                    screenshot_captions: screenshot_captions__.unwrap_or_default(),
                 })
             }
         }
@@ -13806,6 +13846,155 @@ impl<'de> serde::Deserialize<'de> for ManifestResources {
         }
         deserializer.deserialize_struct(
             "nginxui.plugin.v1.ManifestResources",
+            FIELDS,
+            GeneratedVisitor,
+        )
+    }
+}
+impl serde::Serialize for ManifestScreenshot {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.id.is_empty() {
+            len += 1;
+        }
+        if !self.path.is_empty() {
+            len += 1;
+        }
+        if !self.dark_path.is_empty() {
+            len += 1;
+        }
+        if !self.caption.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser =
+            serializer.serialize_struct("nginxui.plugin.v1.ManifestScreenshot", len)?;
+        if !self.id.is_empty() {
+            struct_ser.serialize_field("id", &self.id)?;
+        }
+        if !self.path.is_empty() {
+            struct_ser.serialize_field("path", &self.path)?;
+        }
+        if !self.dark_path.is_empty() {
+            struct_ser.serialize_field("dark_path", &self.dark_path)?;
+        }
+        if !self.caption.is_empty() {
+            struct_ser.serialize_field("caption", &self.caption)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ManifestScreenshot {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &["id", "path", "dark_path", "darkPath", "caption"];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Id,
+            Path,
+            DarkPath,
+            Caption,
+            __SkipField__,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl serde::de::Visitor<'_> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "id" => Ok(GeneratedField::Id),
+                            "path" => Ok(GeneratedField::Path),
+                            "darkPath" | "dark_path" => Ok(GeneratedField::DarkPath),
+                            "caption" => Ok(GeneratedField::Caption),
+                            _ => Ok(GeneratedField::__SkipField__),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ManifestScreenshot;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct nginxui.plugin.v1.ManifestScreenshot")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ManifestScreenshot, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut id__ = None;
+                let mut path__ = None;
+                let mut dark_path__ = None;
+                let mut caption__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Id => {
+                            if id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("id"));
+                            }
+                            id__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Path => {
+                            if path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("path"));
+                            }
+                            path__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::DarkPath => {
+                            if dark_path__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("darkPath"));
+                            }
+                            dark_path__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Caption => {
+                            if caption__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("caption"));
+                            }
+                            caption__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::__SkipField__ => {
+                            let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                Ok(ManifestScreenshot {
+                    id: id__.unwrap_or_default(),
+                    path: path__.unwrap_or_default(),
+                    dark_path: dark_path__.unwrap_or_default(),
+                    caption: caption__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct(
+            "nginxui.plugin.v1.ManifestScreenshot",
             FIELDS,
             GeneratedVisitor,
         )

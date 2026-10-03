@@ -88,6 +88,9 @@ pub struct Manifest {
     /// `permissions`.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub permission_reasons: HashMap<String, String>,
+    /// Images of the plugin in use for catalog listings.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub screenshots: Vec<ManifestScreenshot>,
 
     /// Metadata of the `dns01` capability.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -139,6 +142,27 @@ pub struct ManifestI18n {
     /// Translated `permission_reasons`.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub permission_reasons: HashMap<String, String>,
+    /// Translated screenshot captions, keyed by screenshot id.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    pub screenshot_captions: HashMap<String, String>,
+}
+
+/// One image of a catalog listing. The paths are relative to the root of the
+/// plugin repository at the release tag, not to the package.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+#[non_exhaustive]
+pub struct ManifestScreenshot {
+    /// Names the screenshot within the manifest.
+    pub id: String,
+    /// Path of the image.
+    pub path: String,
+    /// The same view in the dark theme.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub dark_path: String,
+    /// English caption.
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub caption: String,
 }
 
 /// Describes how to start the plugin process.

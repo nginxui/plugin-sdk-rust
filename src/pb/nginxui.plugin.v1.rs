@@ -758,6 +758,19 @@ pub struct Manifest {
         ::prost::alloc::string::String,
         ::prost::alloc::string::String,
     >,
+    #[prost(message, repeated, tag = "33")]
+    pub screenshots: ::prost::alloc::vec::Vec<ManifestScreenshot>,
+}
+#[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct ManifestScreenshot {
+    #[prost(string, tag = "1")]
+    pub id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub path: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub dark_path: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub caption: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ManifestI18n {
@@ -767,6 +780,11 @@ pub struct ManifestI18n {
     pub description: ::prost::alloc::string::String,
     #[prost(btree_map = "string, string", tag = "3")]
     pub permission_reasons: ::prost::alloc::collections::BTreeMap<
+        ::prost::alloc::string::String,
+        ::prost::alloc::string::String,
+    >,
+    #[prost(btree_map = "string, string", tag = "4")]
+    pub screenshot_captions: ::prost::alloc::collections::BTreeMap<
         ::prost::alloc::string::String,
         ::prost::alloc::string::String,
     >,
