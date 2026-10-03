@@ -524,6 +524,25 @@ plugin needs it and the handlers are wired the same way for both transports.
 | `http` | Types and helpers of the `http` capability |
 | `logger` | The logger, `Level` and the `debug!`, `info!`, `warn!` and `error!` macros |
 
+## The manifest
+
+Write `plugin.json` by hand, as the
+[developer guide](https://nginxui.com/plugin/manifest) describes. The
+`protocol::Manifest` types read it with serde, also when it uses a member this
+version of the SDK does not know yet. They are `#[non_exhaustive]`: a new
+member of the contract is not a breaking change, and code that generates a
+manifest, such as a long provider list, starts from `Default` and sets fields:
+
+```rust
+use nginxui_plugin_sdk::protocol::{Dns01Provider, ManifestDns01};
+
+let mut provider = Dns01Provider::default();
+provider.code = "example".into();
+provider.name = "Example DNS".into();
+let mut dns01 = ManifestDns01::default();
+dns01.providers.push(provider);
+```
+
 ## The proto contract and `pb`
 
 The wire contract is defined in proto, in

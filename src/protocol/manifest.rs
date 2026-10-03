@@ -6,8 +6,23 @@ use serde_json::Value;
 use super::{is_false, is_zero_i32, Settings};
 
 /// The parsed `plugin.json`. Validation lives in the host.
+///
+/// Write `plugin.json` by hand and read it with serde. The manifest types are
+/// `#[non_exhaustive]`, so a member the contract adds is not a breaking
+/// change; code that builds a manifest starts from `Default` and sets fields:
+///
+/// ```
+/// use nginxui_plugin_sdk::protocol::{Manifest, ManifestI18n};
+///
+/// let mut zh = ManifestI18n::default();
+/// zh.name = "示例".into();
+/// let mut manifest = Manifest::default();
+/// manifest.id = "com.example.demo".into();
+/// manifest.i18n.insert("zh_CN".into(), zh);
+/// ```
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct Manifest {
     /// Plugin id in reverse domain form.
     pub id: String,
@@ -113,6 +128,7 @@ pub struct Manifest {
 /// string means no translation for that field.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestI18n {
     /// Translated name.
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -128,6 +144,7 @@ pub struct ManifestI18n {
 /// Describes how to start the plugin process.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestServer {
     /// Maps `<goos>-<goarch>` to a path relative to the plugin directory.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
@@ -150,6 +167,7 @@ pub struct ManifestServer {
 /// The resources a plugin process needs at most. 0 means no hint.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestResources {
     /// Memory in MiB.
     #[serde(skip_serializing_if = "is_zero_i32")]
@@ -166,6 +184,7 @@ pub struct ManifestResources {
 /// Describes the optional browser bundle.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestWebapp {
     /// The bundle script.
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -189,6 +208,7 @@ pub struct ManifestWebapp {
 /// A zero build iframe page.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestPage {
     /// Route path.
     pub path: String,
@@ -204,6 +224,7 @@ pub struct ManifestPage {
 /// Declares process-less contributions.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestContent {
     /// Directory holding `conf/` and `block/` config templates.
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -216,6 +237,7 @@ pub struct ManifestContent {
 /// A hard dependency on another plugin.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestRequirement {
     /// Plugin id.
     pub id: String,
@@ -227,6 +249,7 @@ pub struct ManifestRequirement {
 /// A host scheduled task.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestCron {
     /// Id of the entry.
     pub id: String,
@@ -239,6 +262,7 @@ pub struct ManifestCron {
 /// The metadata block of the `dns01` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestDns01 {
     /// The vendors the plugin solves DNS-01 for.
     pub providers: Vec<Dns01Provider>,
@@ -247,6 +271,7 @@ pub struct ManifestDns01 {
 /// One vendor a plugin can solve DNS-01 for.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct Dns01Provider {
     /// Display name.
     pub name: String,
@@ -268,6 +293,7 @@ pub struct Dns01Provider {
 /// Points at vendor documentation.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct Dns01ProviderLinks {
     /// API documentation.
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -288,6 +314,7 @@ pub const DNS01_FIELD_UNIT_SECONDS: &str = "seconds";
 /// Describes how a host lays out the credential form.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct Dns01ProviderForm {
     /// Fields in display order. Use an empty list for a provider that takes
     /// no values.
@@ -301,6 +328,7 @@ pub struct Dns01ProviderForm {
 /// are English gettext msgids.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct Dns01ProviderField {
     /// Config key.
     pub key: String,
@@ -333,6 +361,7 @@ pub struct Dns01ProviderField {
 /// are fixed config entries the host stores while the method is chosen.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct Dns01ProviderMethod {
     /// Method name.
     pub name: String,
@@ -349,6 +378,7 @@ pub struct Dns01ProviderMethod {
 /// The metadata block of the `http` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestHttp {
     /// `unix` (reverse proxy to a socket) or `rpc` (`http.handle` fallback).
     pub listen: String,
@@ -357,6 +387,7 @@ pub struct ManifestHttp {
 /// The metadata block of the `notify` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestNotify {
     /// The channels the plugin delivers through.
     pub channels: Vec<NotifyChannel>,
@@ -365,6 +396,7 @@ pub struct ManifestNotify {
 /// One vendor channel a plugin delivers notifications through.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct NotifyChannel {
     /// Shared across every installed notify plugin.
     pub code: String,
@@ -378,6 +410,7 @@ pub struct NotifyChannel {
 /// The metadata block of the `probe` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestProbe {
     /// The probe kinds.
     pub kinds: Vec<ProbeKind>,
@@ -386,6 +419,7 @@ pub struct ManifestProbe {
 /// One way a plugin can check the health of a target.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ProbeKind {
     /// Shared across every installed probe plugin.
     pub code: String,
@@ -399,6 +433,7 @@ pub struct ProbeKind {
 /// The metadata block of the `storage` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestStorage {
     /// The backends.
     pub backends: Vec<StorageBackend>,
@@ -407,6 +442,7 @@ pub struct ManifestStorage {
 /// One place a plugin can keep host files.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct StorageBackend {
     /// Shared across every installed storage plugin.
     pub code: String,
@@ -420,6 +456,7 @@ pub struct StorageBackend {
 /// The metadata block of the `cert.deploy` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestDeploy {
     /// The target kinds.
     pub targets: Vec<DeployTarget>,
@@ -428,6 +465,7 @@ pub struct ManifestDeploy {
 /// One kind of external target a plugin can push certificates to.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct DeployTarget {
     /// Shared across every installed cert.deploy plugin.
     pub code: String,
@@ -441,6 +479,7 @@ pub struct DeployTarget {
 /// The metadata block of the `security.blocklist` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestBlocklist {
     /// The source kinds.
     pub sources: Vec<BlocklistSource>,
@@ -449,6 +488,7 @@ pub struct ManifestBlocklist {
 /// One kind of source a plugin can fetch a list of addresses to deny from.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct BlocklistSource {
     /// Shared across every installed security.blocklist plugin.
     pub code: String,
@@ -474,6 +514,7 @@ pub mod blocklist_refresh {
 /// The metadata block of the `upstream.discovery` capability.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestDiscovery {
     /// The providers.
     pub providers: Vec<DiscoveryProvider>,
@@ -482,6 +523,7 @@ pub struct ManifestDiscovery {
 /// One place a plugin can resolve services from.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct DiscoveryProvider {
     /// Shared across every installed upstream.discovery plugin.
     pub code: String,
@@ -495,6 +537,7 @@ pub struct DiscoveryProvider {
 /// Tunes the `log.sink` capability. Every field is optional.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestLogSink {
     /// The most entries of one `log.push` stream. 0 means
     /// [`log_sink_limits::DEFAULT_BATCH_SIZE`](super::log_sink_limits::DEFAULT_BATCH_SIZE).
@@ -515,6 +558,7 @@ pub struct ManifestLogSink {
 /// travel as a map of strings.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ConfigurationSchema {
     /// The fields in display order.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -524,6 +568,7 @@ pub struct ConfigurationSchema {
 /// One entry of [`ConfigurationSchema`].
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ConfigurationField {
     /// Config key.
     pub key: String,
@@ -558,6 +603,7 @@ pub mod configuration_field {
 /// The metadata block of the `mcp` capability.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct ManifestMcp {
     /// The tools.
     pub tools: Vec<McpTool>,
@@ -566,6 +612,7 @@ pub struct ManifestMcp {
 /// One Model Context Protocol tool a plugin serves.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct McpTool {
     /// Unique within the plugin. The host publishes it with a prefix derived
     /// from the plugin id.
@@ -580,6 +627,7 @@ pub struct McpTool {
 /// Drives the auto rendered settings form.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct SettingsSchema {
     /// Text above the form.
     #[serde(skip_serializing_if = "String::is_empty")]
@@ -594,6 +642,7 @@ pub struct SettingsSchema {
 /// One entry of [`SettingsSchema`].
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct SettingsField {
     /// Settings key.
     pub key: String,
@@ -618,6 +667,7 @@ pub struct SettingsField {
 /// A choice of a select field.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
+#[non_exhaustive]
 pub struct SettingsOption {
     /// Stored value.
     pub value: String,
