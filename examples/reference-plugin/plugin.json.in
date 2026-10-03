@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Implements every capability of the plugin contract with the Rust SDK.",
   "api_version": 1,
-  "min_nginx_ui_version": "2.7.0",
+  "min_nginx_ui_version": "3.0.0",
   "server": {
     "executables": { "@PLATFORM@": "bin/reference-plugin-@PLATFORM@@EXT@" }
   },
